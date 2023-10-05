@@ -1,4 +1,8 @@
 #Sum total coverage of peaks over different windows
+# file: bed file of peak locations
+# wfile: bed file of windows
+# output: output file for peak coverage
+# chr_sort: should peak location file be sorted (set as TRUE unless file is already sorted)
 peak_sum = function(file,wfile,output,chr_sort=TRUE){
   library(Matrix)
   print(file)
