@@ -1,0 +1,5 @@
+args = commandArgs(trailingOnly=TRUE)
+map = read.table(args[1],header=FALSE,stringsAsFactors = FALSE)
+gc = read.table(args[2],header=FALSE,stringsAsFactors = FALSE)
+F = data.frame(gc = gc[,5],map=map[,6])
+write.csv(F,file=args[3],row.names=FALSE)
