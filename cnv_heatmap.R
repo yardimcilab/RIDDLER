@@ -1,4 +1,4 @@
-cnv_heatmap = function(rid_obj,heat_title,ref_bar=NULL,ref_title=NULL){
+cnv_heatmap = function(rid_obj,heat_title,ref_bar=NULL,ref_title=NULL,cluster=TRUE){
   library(reshape)
   library(stringr)
   library(ggplot2)
@@ -12,6 +12,12 @@ cnv_heatmap = function(rid_obj,heat_title,ref_bar=NULL,ref_title=NULL){
   #wnd = wnd[,1:3]
   Yids = wnd[,1] == "chrY" | wnd[,1] == "chrX" | wnd[,1] == "chrM"
   wnd = wnd[!Yids,]
+
+  #dendrogram clustering
+  if(cluster){
+    hc = hclust(dist(t(rv)))
+    rv = rv[,hc$order]
+  }
 
   #Switch to 3 state values
   cnv_names=c("Loss","Normal","Gain")

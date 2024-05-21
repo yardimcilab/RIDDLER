@@ -1,4 +1,4 @@
-riddler_fit = function(infile,feat_file,peak_file,cov_min=10000){
+riddler_fit = function(infile,feat_file,peak_file,cov_min=10000,peak_corr_filter=0.5,maxit=100,huber=1.345,acc=1e-04){
   library(robustbase)
   library(MASS)
   library(stringr)
@@ -15,9 +15,17 @@ riddler_fit = function(infile,feat_file,peak_file,cov_min=10000){
 
   X = read.csv(feat_file)
   P = read.table(peak_file,sep=" ")
-  X = cbind(X,peaks=P[,5])
-  #gc,map,peaks
-  X = X[,c("gc","map","peaks")]
+  #Filter multi-tissue peak set
+  if(ncol(P)>5){
+    pcor = cor(P[,-(1:4)],rowSums(R))
+    pids = which(pcor > peak_corr_filter)+4
+    if(length(pids)==0){
+      pids = which.max(pcor)+4
+    }
+    P = P[,c(1:4,pids)]
+  }
+  X = cbind(X,peaks=P[,-(1:4)])
+  
   for(i in 1:ncol(X)){
     X[,i] = X[,i] / quantile(X[,i],.75)
   } 
@@ -41,10 +49,7 @@ riddler_fit = function(infile,feat_file,peak_file,cov_min=10000){
   nv = fv
   mask = 0*nv
    
-  #quantile normalization
-  q_list = c(0,1:100)/100
-  mu = rep(0,n)
-  size = rep(0,n)
+  #trimmed mean normalization
   for(i in 1:n){
     Y = R[,i]
     cov = sum(Y)
@@ -52,7 +57,7 @@ riddler_fit = function(infile,feat_file,peak_file,cov_min=10000){
     Y = Y[ids]
       
     scale = mean(Y,trim=.15)
-    if(scale==0){ scale = mean(Y,trim=.15) }      
+    if(scale==0){ scale = mean(Y) }      
     Y = round(100 * Y / scale)
 
     nv[ids,i] = Y
@@ -69,7 +74,7 @@ riddler_fit = function(infile,feat_file,peak_file,cov_min=10000){
   nids = as.vector(mask==1)
   Xt = Xt[nids,]
   
-  model = glmrob(Yt ~ .,data=Xt,family="poisson",control= glmrobMqle.control(tcc=1.345),start=c(1,rep(0.1,ncol(Xt))))
+  model = glmrob(Yt ~ .,data=Xt,family="poisson",control= glmrobMqle.control(tcc=huber,maxit=maxit,acc=acc),start=c(1,rep(0.1,ncol(Xt))))
   coef = model$coefficients
   fvals = exp(predict(model,newdata=X))
   for(i in 1:n){
