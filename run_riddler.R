@@ -27,8 +27,8 @@ source("cnv_heatmap.R")
 #	'maxit': maximum iterations, default 100
 #	'huber': parameter for huber loss, default 1.345 (allows for 95% efficiency in absense of outliers)
 #	'acc': threshold for convergence of coeficients, default 1e-04
-mat_file = "SNU601_1MB.bed"
-rid_obj = riddler_fit(mat_file,feat_file="features.1MB.csv",peak_file="tissue_peaks.1MB.bed",cov_min=10000,peak_corr_filter=.5)
+mat_file = "data/SNU601_1MB.bed"
+rid_obj = riddler_fit(mat_file,feat_file="features/features.1MB.csv",peak_file="features/tissue_peaks.1MB.bed",cov_min=10000,peak_corr_filter=.5)
 
 #Call CNVs from fitted model.
 #  'w_size' is the size of the sliding window for p-value calculation
