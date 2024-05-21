@@ -18,6 +18,11 @@ source("cnv_heatmap.R")
 #  See util scripts and examples to create these inputs for different window sizes.
 #  Custom covariates can be used, so long as they are at the same resolution and format.
 
+#Create window by cell matrix from sorted fragment file. Example shown for SNU601 data example
+#	Uses window location file, minimum fragments for cell filtering 
+source("util/fast_window_matrix.R")
+window_matrix("data/SNU601_subset_frags_sorted.tsv",w_file="features/window_1MB.bed",out_file="data/SNU601_1MB.bed",frag_min=10000)
+
 #Fit robust GLM and compute expected values.  
 #	cov_min: Coverage minimum per cell, default set to 10,000 reads
 #	peak_corr_filter: If using a multi-columned peak file, like tissue peak set, filter columns who's correlation with bulk signal is greater than this value.
