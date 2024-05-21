@@ -1,16 +1,18 @@
 #Sum total coverage of peaks over different windows
-#Works for peak files that have bed style format of 'chr start stop ...'
-#	Only first three columns are needed.
-#	Positions should be non-overlapping, otherwise intersecting areas will be double counted
-# file: bed file of peak locations
+#Works for DNase multi-tissue file, separating each tissue type as a different column in output file.
+# file: DNase multi-tissue file, or similar.
+#	File must start with peak location as 'chr start stop', have a column denoting types of peaks
 # wfile: bed file of windows
 # output: output file for peak coverage
-# chr_sort: should peak location file be sorted (set as TRUE unless file is already sorted)
-peak_sum = function(file,wfile,output,chr_sort=TRUE){
+# tid: column index of peak type information. Each unique value becomes a column in the output file.
+multi_peak_sum = function(file,wfile,output,chr_sort=FALSE,tid=10){
   library(Matrix)
+  library(data.table)
   print(file)
+  tid=10
   #Read in bed file
-  atac = read.table(file,header=TRUE,stringsAsFactors = FALSE,sep="\t")
+  atac = fread(file,data.table=FALSE)
+  types = unique(atac[,tid])
   chr_list = c(paste("chr",1:22,sep=""),"chrX","chrY")
   #atac = atac[atac[,1] %in% chr_list,]
   if(chr_sort){
@@ -25,8 +27,9 @@ peak_sum = function(file,wfile,output,chr_sort=TRUE){
   #Read in window file
   window = read.table(wfile,header=FALSE,stringsAsFactors = FALSE)
   n = dim(window)[1]
-  #Create vector of total reads per window
-  total = rep(0,n)
+  #Create matrix of total reads per window
+  total = matrix(0,nrow=n,ncol=length(types))
+  colnames(total) = types
 
   #Sum intersections with window
   #Leverages both bed files being sorted
@@ -35,10 +38,11 @@ peak_sum = function(file,wfile,output,chr_sort=TRUE){
   for(i in 1:an){
     at = atac[i,]
     if(at[1] %in% chr_list){
+      id = which(types == unlist(at[tid]))
       for(j in x:n){
         wd = window[j,]
         if(at[1]==wd[1] && at[2] < wd[3]){
-          total[j] = unlist(total[j]+at[3]-at[2])
+          total[j,id] = unlist(total[j,id]+at[3]-at[2])
           break
         }
       }

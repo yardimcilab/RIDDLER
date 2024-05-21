@@ -1,4 +1,4 @@
-window_bed = function(window,name,size_file){
+window_bed = function(window,outfile,size_file){
   options(scipen = 100)
   #create list of chromosomes
   chr_list = c(paste("chr",1:22,sep=""),"chrX","chrY")
@@ -17,9 +17,7 @@ window_bed = function(window,name,size_file){
     id = id+num
     window_peaks = rbind(window_peaks,data.frame(chr=rep(chr,num),start=starts,end=ends,name=w_name,stringsAsFactors = FALSE))
   }
-  #window_peaks = bedr.sort.region(window_peaks)
-  #window_peaks = format(window_peaks,scientific=F)
-  write.table(window_peaks,paste("window_",name,".bed",sep=""),sep="\t",row.names = FALSE,quote=FALSE,col.names=FALSE)
+  write.table(window_peaks,outfile,sep="\t",row.names = FALSE,quote=FALSE,col.names=FALSE)
 }
 
 chrom_lengths = function(chr_list,file){
@@ -28,5 +26,4 @@ chrom_lengths = function(chr_list,file){
   val = genome_vals[ids,2]
   return(val)
 }
-args = commandArgs(trailingOnly=TRUE)
-window_bed(as.numeric(args[1]),args[2],args[3])
+

@@ -1,15 +1,15 @@
 #Turn bed reads from all cells into window x cell matrix
-window_matrix = function(bed_file,w_file,out_file){
+window_matrix = function(bed_file,w_file,out_file,frag_min=5000){
   library(data.table)
   print(paste0("Reading ",bed_file))
   print(paste0("Write output to ",out_file))
   chr_list = c(paste("chr",1:22,sep=""),"chrX","chrY")
 
-  #Load fragments, get barcodes with at least 1000 reads
+  #Load fragments, get barcodes with at least frag_min reads
   frags = fread(bed_file,data.table=FALSE)
   print("Fragments loaded")
   b_tab = table(frags[,4])
-  barcodes = names(b_tab[b_tab >= 5000])
+  barcodes = names(b_tab[b_tab >= frag_min])
   frags = frags[frags[,4] %in% barcodes,]
   print(paste0("Barcodes filtered: ",length(barcodes)))
   print(paste0("Fragments to read: ",nrow(frags)))
