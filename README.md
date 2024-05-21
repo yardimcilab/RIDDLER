@@ -10,12 +10,12 @@ To run the algorithm at different resolutions, the feature files will need to re
 We have included a bash script util/create_features.sh to creatue new feature files once the above dependencies have been included.  The script will need to be run with the files in that folder.
 
 Script usage:
-./create_features.sh [size of windows] [suffix] [path to assembly] [assembly chromosome sizes]
+./create_features.sh [size of windows] [suffix] [path to assembly] [assembly chromosome sizes] [mappability big wig]
 
 Chromosome sizes for hg38 are included as util/hg38.fa.sizes.  The suffix parameter will name the outputs as features.suffix.csv and window_suffix.bed.
 
 Example usage:
-./create_features.sh 10000000 10MB ~/hg38.fa hg38.fa.sizes
+./create_features.sh 10000000 10MB ~/hg38.fa hg38.fa.sizes k50.Umap.MultiTrackMappability.bw
 
 # Creating new peak covariates
 The peak covariate input for the algorithm is the relative coverage of each window by the input peak set.  We have included multi_tissue_peaks.1MB.bed (and other resolution versions), as a default covariate for 1MB windows derived from a multi-tissue atlas.  Each tissue in the atlas is included as a different peak covariate, making this a reliable default for many cell types.
