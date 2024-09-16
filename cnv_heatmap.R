@@ -1,4 +1,4 @@
-cnv_heatmap = function(rid_obj,heat_title,ref_bar=NULL,ref_title=NULL,cluster=TRUE){
+cnv_heatmap = function(rid_obj,heat_title,states=TRUE,ref_bar=NULL,ref_title=NULL,cluster=TRUE){
   library(reshape)
   library(stringr)
   library(ggplot2)
@@ -19,24 +19,28 @@ cnv_heatmap = function(rid_obj,heat_title,ref_bar=NULL,ref_title=NULL,cluster=TR
     rv = rv[,hc$order]
   }
 
-  #Switch to 3 state values
-  cnv_names=c("Loss","Normal","Gain")
-  temp = rv
-  temp[rv < 1] = cnv_names[1]
-  temp[rv == 1] = cnv_names[2]
-  temp[rv > 1] = cnv_names[3]
-  rv = temp
-  if(!is.null(ref_bar)){
-    temp = ref_bar
-    temp[ref_bar < 1] = cnv_names[1]
-    temp[ref_bar == 1] = cnv_names[2]
-    temp[ref_bar > 1] = cnv_names[3]
-    ref_bar = temp
+  if(!states){
+    #Switch to 3 state values
+    cnv_names=c("Loss","Normal","Gain")
+    temp = rv
+    temp[rv < 1] = cnv_names[1]
+    temp[rv == 1] = cnv_names[2]
+    temp[rv > 1] = cnv_names[3]
+    rv = temp
+    if(!is.null(ref_bar)){
+      temp = ref_bar
+      temp[ref_bar < 1] = cnv_names[1]
+      temp[ref_bar == 1] = cnv_names[2]
+      temp[ref_bar > 1] = cnv_names[3]
+      ref_bar = temp
+    }
+    heat_color = c("dodgerblue","gray90","firebrick1")
+    names(heat_color) = c(cnv_names)
+  } else{
+    cnv_names = c(0,0.5,1,1.5,2,3)
+    heat_color = c("blue","dodgerblue","gray90","palevioletred1","firebrick1","red4")
+    names(heat_color) = c(cnv_names)
   }
-  #heat_color = c("blue","gray90","red")
-  heat_color = c("dodgerblue","gray90","firebrick1")
-  names(heat_color) = c(cnv_names)
-
   
   if(!is.null(ref_bar)){
     anno_df = data.frame(x = ref_bar)
