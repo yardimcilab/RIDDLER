@@ -5,6 +5,7 @@ Algorithm is run in R, with a bedfile of cell barcoded de-duplicated reads as th
 
 ## Feature files and peak covariates
 RIDDLER requires a feature and window location file to run, and optionally a peak covariate file as well.  We have included examples feature and window files for window sizes of 1MB, 500KB, 250KB, and 100KB, located in features/features.[size].csv and features/window_[size].bed.  These feature files contain GC and mappability scores for hg38, aggegated at the specified resolutions, which are useful for a wide variety of assays.  See later sections for steps on how to generate these for different window sizes.
+
 An additional covariate file can also be passed to the algorithm, such as ATAC-seq peak regions for various tissues.  Examples for different window sizes are also included in features/tissue_peaks.[size].bed. The 5th and onward columns of this file will be used as separate covariates, with the option to set a parameter for minimum correlation with data in order to be included (most correlated column is always included).
 
 ### Creating new feature files for different window resolutions
@@ -26,6 +27,7 @@ The peak covariate input for the algorithm is the relative coverage of each wind
 To generate the multi-tissue peak file for a different resolution, you can run util/multi_peak_sum.R in R, using the window_[suffix].bed output from the feature generation step above.  You will need to download the DNase site data from https://zenodo.org/records/3838751 (DHS_Index_and_Vocabulary_hg38_WM20190703.txt.gz)
 
 Example usage in R:
+
 multi_peak_sum("DHS_Index_and_Vocabulary_hg38_WM20190703.txt","window_10MB.bed","tissue_peaks.10MB.bed")
 
 If you wish to use your own called peaks as covariates, you can use util/peak_sum.R to create a peak feature file from any bed format input, such as the output from MACS2
@@ -37,6 +39,7 @@ Once the necessary feature and window files are created, the algorithm is run in
 The function window_matrix in util/fast_window_matrix.R will bin reads in a bed-like file format, with columns corresponding to chr, start, end, barcode. It matches read locations to a window file, such as those generated in the above steps, creating a window by cell matrix of reads.  This matrix is saved to a specified file.
 
 source("util/fast_window_matrix.R")
+
 window_matrix("data/SNU601_subset_frags_sorted.tsv",w_file="features/window_1MB.bed",out_file="data/SNU601_1MB.bed",frag_min=10000)
 
 ### Fit GLM model
@@ -51,11 +54,14 @@ The function copy_call takes a riddler object, and identifies significant deviat
 The list of copy number values to be considered is passed as an argument to the function, expressed as multipliers of the base copy number (1).
 
 source("copy_call.R")
+
 rid_obj = copy_call(rid_obj,w_size=5,prob_thresh=.025,mult=c(0,.5,1,1.5,2,3))
 
 ## Plotting CNVs
 We include the function cnv_heatmap, a wrapper for ComplexHeatmap, to create plots of the reported CNV matrix from RIDDLER. 
 
 source("cnv_heatmap.R")
+
 heat_plot = cnv_heatmap(rid_obj,heat_title="RIDDLER CNVs",ref_bar=NULL,ref_title=NULL,cluster=TRUE)
+
 ggsave(plot=heat_plot,"example_plot.png",device="png",height=5,width=8)
