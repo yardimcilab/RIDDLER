@@ -57,5 +57,4 @@ We include the function cnv_heatmap, a wrapper for ComplexHeatmap, to create plo
 
 source("cnv_heatmap.R")
 heat_plot = cnv_heatmap(rid_obj,heat_title="RIDDLER CNVs",ref_bar=NULL,ref_title=NULL,cluster=TRUE)
-#plot can be saved as a png, jpg, pdf, etc, using ggasve.
 ggsave(plot=heat_plot,"example_plot.png",device="png",height=5,width=8)
