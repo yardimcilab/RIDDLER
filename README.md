@@ -42,7 +42,7 @@ window_matrix("data/SNU601_subset_frags_sorted.tsv",w_file="features/window_1MB.
 ### Fit GLM model
 After the read matrix file is created, the GLM model can be fit. The function riddler_fit takes the matrix file location, feature file location, peak file location (or NULL if not used), and additional parameters and returns a riddler object containing the normalized version of the matrix (obs_norm), expected values under the model (expected), the fitted model (model), and window locations (window)
 
-source("riddler_fit.R")\\
+source("riddler_fit.R")\n
 rid_obj = riddler_fit(mat_file,feat_file="features/features.1MB.csv",peak_file="features/tissue_peaks.1MB.bed",cov_min=10000,peak_corr_filter=.5)
 
 ### Call copy numbers
