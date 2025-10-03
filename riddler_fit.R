@@ -3,6 +3,7 @@ riddler_fit = function(infile,feat_file,peak_file,cov_min=10000,peak_corr_filter
   library(MASS)
   library(stringr)
   library(fitdistrplus)
+  library(data.table)
 
   M = read.table(infile,header=TRUE,sep=" ")
   R = M[,-(1:4)]
@@ -14,18 +15,20 @@ riddler_fit = function(infile,feat_file,peak_file,cov_min=10000,peak_corr_filter
   barcodes = colnames(R)
 
   X = read.csv(feat_file)
-  P = read.table(peak_file,sep=" ")
-  #Filter multi-tissue peak set
-  if(ncol(P)>5){
-    pcor = cor(P[,-(1:4)],rowSums(R))
-    pids = which(pcor > peak_corr_filter)+4
-    if(length(pids)==0){
-      pids = which.max(pcor)+4
+  if(peak_file != "NULL"){
+    P = fread(peak_file,data.table=FALSE)
+    #Filter multi-tissue peak set
+    if(ncol(P)>5){
+      pcor = cor(P[,-(1:4)],rowSums(R))
+      pids = which(pcor > peak_corr_filter)+4
+      if(length(pids)==0){
+        pids = which.max(pcor)+4
+      }
+      P = P[,c(1:4,pids)]
     }
-    P = P[,c(1:4,pids)]
+    X = cbind(X,peaks=P[,-(1:4)])
   }
-  X = cbind(X,peaks=P[,-(1:4)])
-  
+
   for(i in 1:ncol(X)){
     X[,i] = X[,i] / quantile(X[,i],.75)
   } 
@@ -74,7 +77,7 @@ riddler_fit = function(infile,feat_file,peak_file,cov_min=10000,peak_corr_filter
   nids = as.vector(mask==1)
   Xt = Xt[nids,]
   
-  model = glmrob(Yt ~ .,data=Xt,family="poisson",control= glmrobMqle.control(tcc=huber,maxit=maxit,acc=acc),start=c(1,rep(0.1,ncol(Xt))))
+  model = glmrob(Yt ~ .,data=Xt,family="poisson",control= glmrobMqle.control(tcc=huber,maxit=maxit,acc=acc),start=c(1,rep(.1,ncol(Xt))))
   coef = model$coefficients
   fvals = exp(predict(model,newdata=X))
   for(i in 1:n){

@@ -1,7 +1,9 @@
-copy_call = function(rid_obj,w_size=5,prob_thresh=.025,mult=c(0,.5,1,1.5,2,3)){
+copy_call = function(rid_obj,knn=0,w_size=5,prob_thresh=.025,mult=c(0,.5,1,1.5,2,3)){
   library(stringr)
   library(MASS)
   library(fitdistrplus)
+
+  knn = knn+1
 
   #load target window
   wnd = rid_obj$window
@@ -26,13 +28,28 @@ copy_call = function(rid_obj,w_size=5,prob_thresh=.025,mult=c(0,.5,1,1.5,2,3)){
 
   print("Data ready")
 
-  tot_size = 2*w_size+1
+  #Identify k-nearest neighbors for bulk profiling
+  if(knn ==1){
+    kids = matrix(1:ncol(nv),nrow=ncol(nv),ncol=knn)
+  } else{
+    res = log((nv+.1)/(fv+.1))
+    res[is.na(res)] = 0
+    D = as.matrix(dist(t(res),method="euclidean"))
+    kids = matrix(0,nrow=ncol(nv),ncol=knn)
+    for(i in 1:nrow(kids)){
+      kids[i,] = order(D[i,],decreasing=FALSE)[1:knn]
+    }
+  }
+
+  print("KNN computed") 
+
+  tot_size = knn*(2*w_size+1)
 
   #Calulate model copy numbers
-  emp_res = 10000
+  emp_res = 1000
   qs = matrix(0,nrow=emp_res+1,ncol=tot_size)
   for(i in 1:tot_size){
-    su = rowMeans(matrix(runif(1000000*i),ncol=i))
+    su = rowMeans(matrix(runif(100000*i),ncol=i))
     qs[,i] = quantile(su,c(0,(1:emp_res)/emp_res))
   }
   rv = matrix(1,nrow=nrow(fv),ncol=ncol(fv))
@@ -51,15 +68,18 @@ copy_call = function(rid_obj,w_size=5,prob_thresh=.025,mult=c(0,.5,1,1.5,2,3)){
     ids = ids[wnd[ids,1]==wnd[i,1]]
     for(j in 1:ncol(nv)){
       if(nv[i,j]== -1){next}
-      ids_j = ids[nv[ids,j] > -1]
-      mv = mean(ppois(nv[ids_j,j],fv[ids_j,j]))
+      nv_j = as.vector(nv[ids,kids[j,]])
+      fv_j = as.vector(fv[ids,kids[j,]])
+      fv_j = fv_j[nv_j > -1]
+      nv_j = nv_j[nv_j > -1]
+      mv = mean(ppois(nv_j,fv_j))
       
-      num = length(ids_j)
+      num = length(nv_j)
       pv[i,j] = (which.min(abs(qs[,num]-mv))-1)/emp_res
 
       LL = rep(0,length(mult))
       for(k in 1:length(mult)){
-        LL[k] = sum(log(dpois(nv[ids_j,j],mult[k]*fv[ids_j,j])))        
+        LL[k] = sum(dpois(nv_j,mult[k]*fv_j,log=TRUE))        
       }
       rv[i,j] = breaks[which.max(LL)]
       if(is.infinite(max(LL))){
@@ -76,8 +96,8 @@ copy_call = function(rid_obj,w_size=5,prob_thresh=.025,mult=c(0,.5,1,1.5,2,3)){
 
   ids = unlist(nv) != -1
 
-  pvl[ids] = p.adjust(c(pv)[ids],method="fdr")
-  pvh[ids] = p.adjust(c(1-pv)[ids],method="fdr")
+  pvl[ids] = p.adjust(pvl[ids],method="fdr")
+  pvh[ids] = p.adjust((1-pvh)[ids],method="fdr")
 
   print("FDR correction complete")
 

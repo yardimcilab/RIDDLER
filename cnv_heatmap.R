@@ -1,4 +1,4 @@
-cnv_heatmap = function(rid_obj,heat_title,states=TRUE,ref_bar=NULL,ref_title=NULL,cluster=TRUE){
+cnv_heatmap = function(rid_obj,heat_title,states=TRUE,ref_bar=NULL,ref_title='Cluster',cluster=FALSE){
   library(reshape)
   library(stringr)
   library(ggplot2)
@@ -43,16 +43,20 @@ cnv_heatmap = function(rid_obj,heat_title,states=TRUE,ref_bar=NULL,ref_title=NUL
   }
   
   if(!is.null(ref_bar)){
+    if(!cluster){
+      rv = rv[,order(ref_bar)]
+      ref_bar = ref_bar[order(ref_bar)]
+    }
     anno_df = data.frame(x = ref_bar)
     colnames(anno_df) = ref_title
     col_list = list(heat_color)
     names(col_list) = ref_title
-    ha = HeatmapAnnotation(df = anno_df,col=col_list,annotation_name_side = "left",
-        show_legend=FALSE,border=TRUE)
-    ht = Heatmap(t(rv),cluster_rows=TRUE,cluster_columns=FALSE,name="CNV",col=heat_color,show_row_dend = FALSE,
+
+    ha = rowAnnotation(df = anno_df,name=ref_title,show_legend=FALSE,border=TRUE)
+    ht = Heatmap(t(rv),cluster_rows=FALSE,cluster_columns=FALSE,name="CNV",col=heat_color,show_row_dend = FALSE,
         show_column_names=FALSE,show_row_names=FALSE,column_split=factor(wnd[,1],levels=unique(wnd[,1])),
         column_title_rot = 45,column_title_side = "bottom",row_title = "scATAC",
-        top_annotation = ha,border=TRUE,column_gap=unit(2,"mm"))
+        left_annotation = ha,border=TRUE,column_gap=unit(2,"mm"))
   } else{
     ht = Heatmap(t(rv),cluster_rows=TRUE,cluster_columns=FALSE,name="CNV",col=heat_color,show_row_dend = FALSE,
 	show_column_names=FALSE,show_row_names=FALSE,column_split=factor(wnd[,1],levels=unique(wnd[,1])),
