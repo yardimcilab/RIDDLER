@@ -4,6 +4,7 @@ Preprint:
 Travis W. Moore, and Galip Gürkan Yardımcı. "Robust CNV detection using single-cell ATAC-seq." bioRxiv (2023): 2023-10.
 
 Full paper to appear in Nucleic Acids Research 2026
+
 Travis W. Moore, Hisham Mohammed, Andrew C. Adey, and Galip Gürkan Yardımcı. "Robust and generalizable CNV detection for single-cell sequencing assays."
 
 # Running Code
